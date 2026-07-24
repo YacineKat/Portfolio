@@ -1,10 +1,18 @@
-import React from 'react';
+import { useRef } from 'react'
 import ScrollFloat from '../ScrollFloat/ScrollFloat';
+import useDeferredGsapReveal from '../../hooks/useDeferredGsapReveal'
 import './About.css';
 
 export default function About() {
+  const sectionRef = useRef(null)
+
+  useDeferredGsapReveal({
+    rootRef: sectionRef,
+    selectors: ['.about-content h2', '.about-content p', '.about-bullets li']
+  })
+
   return (
-    <section id="about" className="about-section">
+    <section id="about" className="about-section" ref={sectionRef}>
       <div className="container about-content">
         <ScrollFloat
           animationDuration={1}

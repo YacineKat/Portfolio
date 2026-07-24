@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
-import emailjs from '@emailjs/browser';
+import { useState, useRef } from 'react';
 import ScrollFloat from '../ScrollFloat/ScrollFloat';
+import useDeferredGsapReveal from '../../hooks/useDeferredGsapReveal'
 import './Contact.css';
 
 
@@ -41,11 +41,17 @@ const contactInfo = [
 ];
 
 export default function Contact() {
+  const sectionRef = useRef(null)
   const [form, setForm] = useState({ name: '', email: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
   const formRef = useRef();
+
+  useDeferredGsapReveal({
+    rootRef: sectionRef,
+    selectors: ['.contact-section h2', '.contact-left', '.contact-right']
+  })
 
   // دالة تتحقق إذا كان المستخدم على هاتف
   function isMobile() {
@@ -61,6 +67,8 @@ export default function Contact() {
     setError('');
     
     try {
+      const { default: emailjs } = await import('@emailjs/browser');
+
       await emailjs.sendForm(
         'send_gmail_nebula',
         'template_Gmail_Nebula',
@@ -84,7 +92,7 @@ export default function Contact() {
   }
 
   return (
-    <section id="contact" className="contact-section">
+    <section id="contact" className="contact-section" ref={sectionRef}>
       <div className="container contact-content">
         <ScrollFloat
           animationDuration={1}
@@ -120,30 +128,31 @@ export default function Contact() {
           
           <div className="contact-right">
             <div className="contact-info">
-              {contactInfo.map(info => {
-                let link = info.link;
-                // إذا كان الإيميل، غيّر الرابط حسب نوع الجهاز
-                if (info.type === 'Email') {
-                  link = isMobile()
-                    ? 'mailto:contact.nebuladev@gmail.com'
-                    : 'https://mail.google.com/mail/?view=cm&fs=1&to=contact.nebuladev@gmail.com';
-                }
-                return (
-                  <a 
-                    key={info.type} 
-                    href={link} 
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`contact-info-item ${!link ? 'no-link' : ''}`}
-                  >
-                    <div className="contact-info-icon">{info.icon}</div>
-                    <div className="contact-info-content">
-                      <h3>{info.type}</h3>
-                      <p>{info.value}</p>
-                    </div>
-                  </a>
-                );
-              })}
+              {(() => {
+                const mobileEmailLink = isMobile()
+                  ? 'mailto:contact.nebuladev@gmail.com'
+                  : 'https://mail.google.com/mail/?view=cm&fs=1&to=contact.nebuladev@gmail.com';
+
+                return contactInfo.map(info => {
+                  const link = info.type === 'Email' ? mobileEmailLink : info.link;
+
+                  return (
+                    <a 
+                      key={info.type} 
+                      href={link} 
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`contact-info-item ${!link ? 'no-link' : ''}`}
+                    >
+                      <div className="contact-info-icon">{info.icon}</div>
+                      <div className="contact-info-content">
+                        <h3>{info.type}</h3>
+                        <p>{info.value}</p>
+                      </div>
+                    </a>
+                  );
+                });
+              })()}
             </div>
           </div>
         </div>
