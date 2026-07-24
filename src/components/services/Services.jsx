@@ -1,5 +1,6 @@
-import React from 'react';
+import { useRef } from 'react'
 import ScrollFloat from '../ScrollFloat/ScrollFloat';
+import useDeferredGsapReveal from '../../hooks/useDeferredGsapReveal'
 import './Services.css';
 
 const services = [
@@ -108,8 +109,15 @@ const services = [
 ];
 
 export default function Services() {
+  const sectionRef = useRef(null)
+
+  useDeferredGsapReveal({
+    rootRef: sectionRef,
+    selectors: ['.services-section h2', '.service-card']
+  })
+
   return (
-    <section id="services" className="services-section">
+    <section id="services" className="services-section" ref={sectionRef}>
       <div className="container">
         <ScrollFloat
           animationDuration={1}

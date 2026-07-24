@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import './Header.css';
 
 const navLinks = [
@@ -15,27 +15,53 @@ export default function Header() {
   const [isHeaderVisible, setIsHeaderVisible] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      const scrollPosition = window.scrollY;
-      setIsHeaderVisible(scrollPosition > 200);
+    const sectionIds = navLinks.map(link => link.to.substring(1));
+    const sections = sectionIds
+      .map(sectionId => document.getElementById(sectionId))
+      .filter(Boolean);
 
-      const sections = navLinks.map(link => link.to.substring(1));
-      const currentSection = sections.find(section => {
-        const element = document.getElementById(section);
-        if (element) {
-          const rect = element.getBoundingClientRect();
-          return rect.top <= 100 && rect.bottom >= 100;
+    const sentinel = document.getElementById('hero-scroll-sentinel');
+    const cleanup = [];
+
+    if (sentinel) {
+      const headerObserver = new IntersectionObserver(
+        ([entry]) => {
+          setIsHeaderVisible(!entry.isIntersecting);
+        },
+        {
+          threshold: 0,
+          rootMargin: '-200px 0px 0px 0px'
         }
-        return false;
-      });
-      
-      if (currentSection) {
-        setActiveSection(currentSection);
-      }
-    };
+      );
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+      headerObserver.observe(sentinel);
+      cleanup.push(() => headerObserver.disconnect());
+    }
+
+    if (sections.length > 0) {
+      const sectionObserver = new IntersectionObserver(
+        (entries) => {
+          const activeEntry = entries.find(entry => entry.isIntersecting);
+
+          if (activeEntry) {
+            setActiveSection(prev => (prev !== activeEntry.target.id ? activeEntry.target.id : prev));
+          }
+        },
+        {
+          threshold: 0,
+          rootMargin: '-45% 0px -45% 0px'
+        }
+      );
+
+      sections.forEach(section => sectionObserver.observe(section));
+      cleanup.push(() => sectionObserver.disconnect());
+    }
+
+    setIsHeaderVisible(window.scrollY > 200);
+
+    return () => {
+      cleanup.forEach(disconnect => disconnect());
+    };
   }, []);
 
   useEffect(() => {

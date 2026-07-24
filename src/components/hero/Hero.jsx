@@ -5,7 +5,14 @@ import './Hero.css';
 const LiquidEther = lazy(() => import('./LiquidEther'));
 
 export default function Hero() {
-  const [isDesktop, setIsDesktop] = useState(true);
+  const [isDesktop, setIsDesktop] = useState(() => {
+    if (typeof window === 'undefined') {
+      return true;
+    }
+
+    return window.matchMedia('(min-width: 901px)').matches;
+  });
+  const [shouldRenderLiquid, setShouldRenderLiquid] = useState(false);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(min-width: 901px)');
@@ -27,6 +34,34 @@ export default function Hero() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!isDesktop) {
+      setShouldRenderLiquid(false);
+      return undefined;
+    }
+
+    let cancelled = false;
+
+    const scheduleLiquid = window.requestIdleCallback
+      ? (task) => window.requestIdleCallback(task, { timeout: 1200 })
+      : (task) => window.setTimeout(task, 120);
+
+    const cancelLiquid = window.cancelIdleCallback
+      ? (id) => window.cancelIdleCallback(id)
+      : (id) => window.clearTimeout(id);
+
+    const idleId = scheduleLiquid(() => {
+      if (!cancelled) {
+        setShouldRenderLiquid(true);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+      cancelLiquid(idleId);
+    };
+  }, [isDesktop]);
+
   return (
     <section id="hero" className="hero-section">
       <div className="hero-bg">
@@ -36,14 +71,14 @@ export default function Hero() {
           muted
           loop
           playsInline
-          preload="auto"
+          preload="metadata"
           aria-hidden="true"
         >
           <source src="/assets/videos/nebula-mobile.mp4" media="(max-width: 900px)" type="video/mp4" />
           <source src="/assets/videos/nebula.mp4" type="video/mp4" />
         </video>
         <div className="hero-liquid" aria-hidden="true">
-          {isDesktop && (
+          {isDesktop && shouldRenderLiquid && (
             <Suspense fallback={null}>
               <LiquidEther
                 colors={['#5227FF', '#FF9FFC', '#B19EEF']}

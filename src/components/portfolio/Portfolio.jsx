@@ -1,12 +1,15 @@
-import React from 'react';
+import { useRef } from 'react'
 import ScrollFloat from '../ScrollFloat/ScrollFloat';
+import useDeferredGsapReveal from '../../hooks/useDeferredGsapReveal'
 import './Portfolio.css';
 import portfolio from '../../assets/Webs/portfolio.png';
-// import elegant from '../../assets/Webs/elegant.png';
+import elegant from '../../assets/Webs/elegant.png';
 import school from '../../assets/Webs/school.png';
 import tomato from '../../assets/Webs/tomato.png';
 import medical from '../../assets/Webs/medical.png';
 import habit from '../../assets/Webs/habit.png';
+import Academix from '../../assets/Webs/academix.png';
+
 
 
 
@@ -28,13 +31,13 @@ const projects = [
     img: tomato,
     type: 'concept',
   },
-  // {
-  //   title: 'Elegant Fashion',
-  //   url: 'https://elegant-fashion.netlify.app/',
-  //   desc: 'An e-commerce website for trendy fashion with premium services and an elegant shopping experience.',
-  //   tech: ['React', 'E-commerce', 'CSS'],
-  //   img: elegant,
-  // },
+  {
+    title: 'Elegant Fashion',
+    url: 'https://elegant-fashion.netlify.app/',
+    desc: 'An e-commerce website for trendy fashion with premium services and an elegant shopping experience.',
+    tech: ['React', 'E-commerce', 'CSS'],
+    img: elegant,
+  },
   {
     title: 'Nebula School',
     url: 'https://nebula-school.onrender.com/',
@@ -59,11 +62,26 @@ const projects = [
     img: medical,
     type: 'client',
   },
+  {
+    title: 'Academix',
+    url: 'https://academix-os.netlify.app/en',
+    desc: 'the modern operating system for your school. From attendance to grades, from fees to parent communication — everything in one elegant platform. Built for schools that refuse to compromise on quality.',
+    tech: ['Education', 'Next js', 'PWA'],
+    img: Academix,
+    type: 'client',
+  },
 ];
 
 export default function Portfolio() {
+  const sectionRef = useRef(null)
+
+  useDeferredGsapReveal({
+    rootRef: sectionRef,
+    selectors: ['.portfolio-section h2', '.portfolio-card']
+  })
+
   return (
-    <section id="portfolio" className="portfolio-section">
+    <section id="portfolio" className="portfolio-section" ref={sectionRef}>
       <div className="container">
         <ScrollFloat
           animationDuration={1}
@@ -75,12 +93,12 @@ export default function Portfolio() {
           Portfolio
         </ScrollFloat>
         <div className="portfolio-grid">
-          {projects.map((project, i) => (
-            <a href={project.url} className="portfolio-card" key={i} target="_blank" rel="noopener noreferrer">
+          {projects.map((project) => (
+            <a href={project.url} className="portfolio-card" key={project.title} target="_blank" rel="noopener noreferrer">
               <div className={`portfolio-badge ${project.type}`}>
                 {project.type === 'client' ? 'Real Client' : 'Concept Project'}
               </div>
-              <img src={project.img} alt={project.title} className="portfolio-img" />
+              <img src={project.img} alt={project.title} className="portfolio-img" loading="lazy" decoding="async" fetchPriority="low" />
               <div className="portfolio-info">
                 <h3>{project.title}</h3>
                 <p>{project.desc}</p>
